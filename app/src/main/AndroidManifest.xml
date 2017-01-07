@@ -7,7 +7,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <service android:name="CalculatorKeyboard"
+        <service android:name=".keyboard.CalculatorKeyboard"
             android:label="@string/calculator_keyboard"
             android:permission="android.permission.BIND_INPUT_METHOD">
             <intent-filter>

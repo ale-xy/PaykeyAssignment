@@ -1,4 +1,4 @@
-package demo.paykey.paykeyassignment;
+package demo.paykey.paykeyassignment.keyboard;
 
 import android.inputmethodservice.InputMethodService;
 import android.inputmethodservice.Keyboard;
@@ -8,6 +8,8 @@ import android.view.ViewGroup;
 import android.view.inputmethod.ExtractedTextRequest;
 import android.view.inputmethod.InputConnection;
 import android.widget.ListView;
+
+import demo.paykey.paykeyassignment.R;
 
 /**
  * Created by alexy on 07.01.2017.
@@ -50,6 +52,7 @@ public class CalculatorKeyboard extends InputMethodService implements KeyboardVi
                 inputConnection.deleteSurroundingText(1,0);
                 break;
             case Keyboard.KEYCODE_MODE_CHANGE:
+                toggleList();
                 //todo list
                 break;
             case Keyboard.KEYCODE_DONE:
@@ -63,6 +66,16 @@ public class CalculatorKeyboard extends InputMethodService implements KeyboardVi
                 inputConnection.commitText(character, 1);
         }
 
+    }
+
+    private void toggleList() {
+        if (listView.getVisibility() != View.VISIBLE) {
+            listView.setVisibility(View.VISIBLE);
+            //todo disable input
+        } else {
+            listView.setVisibility(View.GONE);
+            //todo enable input
+        }
     }
 
     private void clearAllText() {

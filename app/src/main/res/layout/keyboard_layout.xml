@@ -7,7 +7,8 @@
     <ListView
         android:id="@+id/history_list"
         android:layout_width="match_parent"
-        android:layout_height="120dp"/>
+        android:layout_height="120dp"
+        android:background="@android:color/white"/>
     <android.inputmethodservice.KeyboardView
         android:id="@+id/keyboard"
         android:layout_width="match_parent"
