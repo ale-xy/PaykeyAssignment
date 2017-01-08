@@ -1,27 +1,10 @@
 package demo.paykey.paykeyassignment.evaluator.impl;
 
-import java.util.HashMap;
-
 /**
- * Created by alexy on 07.01.2017.
+ * Created by alexy on 08.01.2017.
  */
+public interface ArithmeticOperations {
+    ArithmeticOperation get(String symbol);
 
-public class ArithmeticOperations {
-    private HashMap<String, ArithmeticOperation> operationHashMap = new HashMap<>(4);
-
-    ArithmeticOperations() {
-        operationHashMap.put("+", new Add());
-        operationHashMap.put("-", new Subtract());
-        operationHashMap.put("*", new Multiply());
-        operationHashMap.put("/", new Divide());
-    }
-
-    ArithmeticOperation get(String symbol) {
-        return operationHashMap.get(symbol);
-    }
-
-    ArithmeticOperation get(char character) {
-        return operationHashMap.get(String.valueOf(character));
-    }
-
+    ArithmeticOperation get(char character);
 }

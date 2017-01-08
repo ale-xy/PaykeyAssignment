@@ -3,6 +3,7 @@ package demo.paykey.paykeyassignment.evaluator.impl;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.SortedSet;
+import java.util.Stack;
 import java.util.TreeSet;
 
 import demo.paykey.paykeyassignment.evaluator.EvaluationErrorException;
@@ -13,11 +14,11 @@ import demo.paykey.paykeyassignment.evaluator.Evaluator;
  */
 
 public class ArithmeticEvaluator implements Evaluator {
+    private final ArithmeticOperations arithmeticOperations;
 
-
-    private final ArithmeticOperations arithmeticOperations = new ArithmeticOperations();
-
-
+    public ArithmeticEvaluator(ArithmeticOperations arithmeticOperations) {
+        this.arithmeticOperations = arithmeticOperations;
+    }
 
     private void preValidateInput(String input) throws EvaluationErrorException {
         SortedSet<Integer> invalidCharacters = new TreeSet<>();
@@ -51,19 +52,19 @@ public class ArithmeticEvaluator implements Evaluator {
     }
 
 
-
     @Override
     public int evaluate(String input) throws EvaluationErrorException {
         preValidateInput(input);
 
-        Queue<Integer> arguments = new LinkedList<>();
-        Queue<ArithmeticOperation> operations = new LinkedList<>();
+        Stack<Integer> arguments = new Stack<>();
+        Stack<ArithmeticOperation> operations = new Stack<>();
 
         int index = 0;
         while (index < input.length()) {
-            char character = input.charAt(index++);
+            char character = input.charAt(index);
 
             if (Character.isWhitespace(character)) {
+                index++;
                 continue;
             }
 
@@ -71,31 +72,47 @@ public class ArithmeticEvaluator implements Evaluator {
                 index = pushNumber(arguments, input, index);
             } else if (isOperation(character)) {
                 pushOperation(operations, arguments, arithmeticOperations.get(character));
+                index++;
             }
-
         }
 
-        return 0;
+        while (!operations.isEmpty()) {
+            pushCurrentResult(arguments, operations);
+        }
+
+        return arguments.pop();
     }
 
-    private int pushNumber(Queue<Integer> queue, String input, int index) {
+    private void pushCurrentResult(Stack<Integer> arguments, Stack<ArithmeticOperation> operations) {
+        //todo division by zero
+        //todo int overflow
+        int arg2 = arguments.pop();
+        int arg1 = arguments.pop();
+        arguments.push(operations.pop().result(arg1, arg2));
+    }
+
+    private int pushNumber(Stack<Integer> stack, String input, int index) {
         int value = 0;
 
         while (index < input.length()) {
-            char character = input.charAt(index++);
+            char character = input.charAt(index);
             if (Character.isDigit(character)) {
                 int digit = Character.digit(character, 10);
                 value = value * 10 + digit;
+                index++;
             } else {
                 break;
             }
         }
 
-        queue.add(value);
+        stack.push(value);
         return index;
     }
 
-    private void pushOperation(Queue<ArithmeticOperation> operations, Queue<Integer> arguments, ArithmeticOperation operation) {
-
+    private void pushOperation(Stack<ArithmeticOperation> operations, Stack<Integer> arguments, ArithmeticOperation operation) {
+        while (!operations.isEmpty() && operation.getPrecedence() < operations.peek().getPrecedence()) {
+            pushCurrentResult(arguments, operations);
+        }
+        operations.push(operation);
     }
 }
