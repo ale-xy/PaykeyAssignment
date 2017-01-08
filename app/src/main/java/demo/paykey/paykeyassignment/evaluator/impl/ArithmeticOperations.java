@@ -1,4 +1,4 @@
-package demo.paykey.paykeyassignment.evaluator;
+package demo.paykey.paykeyassignment.evaluator.impl;
 
 import java.util.HashMap;
 
@@ -18,6 +18,10 @@ public class ArithmeticOperations {
 
     ArithmeticOperation get(String symbol) {
         return operationHashMap.get(symbol);
+    }
+
+    ArithmeticOperation get(char character) {
+        return operationHashMap.get(String.valueOf(character));
     }
 
 }

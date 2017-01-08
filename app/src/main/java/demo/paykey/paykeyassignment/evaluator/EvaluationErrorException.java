@@ -10,10 +10,10 @@ import java.util.TreeSet;
  */
 
 public class EvaluationErrorException extends Exception {
-    private SortedSet<Integer> errorPositions = new TreeSet<>();
+    private final SortedSet<Integer> errorPositions;
 
-    public void addErrorPosition(int position) {
-        errorPositions.add(position);
+    public EvaluationErrorException(SortedSet<Integer> errorPositions) {
+        this.errorPositions = errorPositions;
     }
 
     public SortedSet<Integer> getErrorPositions() {
