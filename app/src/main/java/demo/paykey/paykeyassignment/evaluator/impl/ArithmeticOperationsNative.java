@@ -13,7 +13,7 @@ public class ArithmeticOperationsNative implements ArithmeticOperations {
 
     private HashMap<String, ArithmeticOperation> operationHashMap = new HashMap<>(4);
 
-    ArithmeticOperationsNative() {
+    public ArithmeticOperationsNative() {
         operationHashMap.put("+", new Add());
         operationHashMap.put("-", new Subtract());
         operationHashMap.put("*", new Multiply());

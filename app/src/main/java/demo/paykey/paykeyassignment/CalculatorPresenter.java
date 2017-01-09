@@ -26,6 +26,12 @@ public class CalculatorPresenter implements CalculatorContract.Presenter {
 
     @Override
     public void evaluate(final String input) {
+        try {
+            view.showResult(String.valueOf(evaluator.evaluate(input)));
+        } catch (EvaluationErrorException exception) {
+            view.showError(input, exception.getErrorPositions(), exception.getMessage());
+        }
+
         view.historyItemAdded(input);
         executor.execute(new Runnable() {
             @Override

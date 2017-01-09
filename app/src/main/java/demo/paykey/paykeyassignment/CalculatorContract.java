@@ -10,8 +10,8 @@ import java.util.SortedSet;
 public interface CalculatorContract {
     interface View {
         void showResult(String result);
-        void showError(SortedSet<Integer> errorPositions);
-        void onHistoryLoaded(List<String> history);
+        void showError(String input, SortedSet<Integer> errorPositions, String message);
+        void updateHistory(List<String> history);
         void historyItemAdded(String item);
         void onHistoryLoadError(String error);
     }

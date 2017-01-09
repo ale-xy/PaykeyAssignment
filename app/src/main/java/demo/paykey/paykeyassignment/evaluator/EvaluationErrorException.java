@@ -12,7 +12,13 @@ import java.util.TreeSet;
 public class EvaluationErrorException extends Exception {
     private final SortedSet<Integer> errorPositions;
 
-    public EvaluationErrorException(SortedSet<Integer> errorPositions) {
+    public EvaluationErrorException(String message) {
+        super(message);
+        errorPositions = null;
+    }
+
+    public EvaluationErrorException(String message, SortedSet<Integer> errorPositions) {
+        super(message);
         this.errorPositions = errorPositions;
     }
 

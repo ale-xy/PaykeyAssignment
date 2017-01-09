@@ -5,6 +5,10 @@ package demo.paykey.paykeyassignment.evaluator.impl;
  */
 
 public class Add implements ArithmeticOperation {
+    static {
+        System.loadLibrary("native-lib");
+    }
+
     @Override
     public native int result(int a, int b);
 

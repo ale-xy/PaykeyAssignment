@@ -1,5 +1,6 @@
 package demo.paykey.paykeyassignment.evaluator.impl;
 
+import java.util.EmptyStackException;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.SortedSet;
@@ -43,7 +44,7 @@ public class ArithmeticEvaluator implements Evaluator {
         }
 
         if (!invalidCharacters.isEmpty()) {
-            throw new EvaluationErrorException(invalidCharacters);
+            throw new EvaluationErrorException("Evaluation error", invalidCharacters);
         }
     }
 
@@ -83,12 +84,18 @@ public class ArithmeticEvaluator implements Evaluator {
         return arguments.pop();
     }
 
-    private void pushCurrentResult(Stack<Integer> arguments, Stack<ArithmeticOperation> operations) {
-        //todo division by zero
+    private void pushCurrentResult(Stack<Integer> arguments, Stack<ArithmeticOperation> operations) throws EvaluationErrorException {
         //todo int overflow
-        int arg2 = arguments.pop();
-        int arg1 = arguments.pop();
-        arguments.push(operations.pop().result(arg1, arg2));
+        try {
+            int arg2 = arguments.pop();
+            int arg1 = arguments.pop();
+
+            arguments.push(operations.pop().result(arg1, arg2));
+        } catch (ArithmeticException e) {
+            throw new EvaluationErrorException("Division by zero");
+        } catch (EmptyStackException e) {
+            throw new EvaluationErrorException("Missing argument");
+        }
     }
 
     private int pushNumber(Stack<Integer> stack, String input, int index) {
@@ -109,7 +116,7 @@ public class ArithmeticEvaluator implements Evaluator {
         return index;
     }
 
-    private void pushOperation(Stack<ArithmeticOperation> operations, Stack<Integer> arguments, ArithmeticOperation operation) {
+    private void pushOperation(Stack<ArithmeticOperation> operations, Stack<Integer> arguments, ArithmeticOperation operation) throws EvaluationErrorException {
         while (!operations.isEmpty() && operation.getPrecedence() < operations.peek().getPrecedence()) {
             pushCurrentResult(arguments, operations);
         }

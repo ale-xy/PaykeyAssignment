@@ -1,8 +1,13 @@
 package demo.paykey.paykeyassignment.keyboard;
 
+import android.graphics.Color;
 import android.inputmethodservice.InputMethodService;
 import android.inputmethodservice.Keyboard;
 import android.inputmethodservice.KeyboardView;
+import android.text.SpannableString;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
+import android.text.style.ForegroundColorSpan;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.ExtractedTextRequest;
@@ -12,13 +17,20 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import java.util.List;
-import java.util.SortedSet;
 
 import demo.paykey.paykeyassignment.CalculatorContract;
 import demo.paykey.paykeyassignment.CalculatorPresenter;
+import java.util.List;
+import java.util.SortedSet;
+
+import javax.inject.Inject;
+
+import demo.paykey.paykeyassignment.CalculatorContract;
 import demo.paykey.paykeyassignment.R;
 import demo.paykey.paykeyassignment.storage.StringListFileStorage;
+import demo.paykey.paykeyassignment.di.CalculatorComponent;
+import demo.paykey.paykeyassignment.di.CalculatorModule;
+import demo.paykey.paykeyassignment.di.DaggerCalculatorComponent;
 
 /**
  * Created by alexy on 07.01.2017.
@@ -28,6 +40,19 @@ public class CalculatorKeyboard extends InputMethodService implements KeyboardVi
     private KeyboardView keyboardView;
     private ListView listView;
     private Keyboard keyboard;
+    private TextView errorView;
+
+    private CalculatorContract.Presenter presenter;
+
+    boolean inputEnabled = true;
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        CalculatorComponent calculatorComponent =
+                DaggerCalculatorComponent.builder().calculatorModule(new CalculatorModule(this)).build();
+        presenter = calculatorComponent.getPresenter();
+    }
 
     private HistoryListAdapter historyListAdapter;
 
@@ -53,6 +78,12 @@ public class CalculatorKeyboard extends InputMethodService implements KeyboardVi
 
         presenter.loadHistory();
 
+        listView.setVisibility(View.GONE);
+        inputEnabled = true;
+
+        errorView = (TextView)view.findViewById(R.id.error_message);
+        errorView.setVisibility(View.GONE);
+
         keyboard = new Keyboard(this, R.xml.keyboard);
         keyboardView.setKeyboard(keyboard);
         keyboardView.setPreviewEnabled(false);
@@ -60,33 +91,41 @@ public class CalculatorKeyboard extends InputMethodService implements KeyboardVi
         return view;
     }
 
-    private void hideList() {
-        listView.setVisibility(View.GONE);
-    }
-
     @Override
     public void onKey(int primaryCode, int[] ints) {
+        if (errorView.getVisibility() != View.GONE) {
+            errorView.setVisibility(View.GONE);
+        }
+
+        if (primaryCode == Keyboard.KEYCODE_MODE_CHANGE) {
+            toggleList();
+            return;
+        }
+
+        if (!inputEnabled) {
+            return;
+        }
+
         InputConnection inputConnection = getCurrentInputConnection();
         switch (primaryCode) {
             case Keyboard.KEYCODE_DELETE:
                 inputConnection.deleteSurroundingText(1,0);
-                break;
-            case Keyboard.KEYCODE_MODE_CHANGE:
-                toggleList();
-                //todo list
                 break;
             case Keyboard.KEYCODE_DONE:
                 presenter.evaluate(getInputText());
                 //todo calc
                 break;
             case Keyboard.KEYCODE_CANCEL:
-                clearAllText();
+                clearText(inputConnection);
                 break;
             default:
                 String character = String.valueOf((char)primaryCode);
                 inputConnection.commitText(character, 1);
         }
+    }
 
+    private String getCurrentText(InputConnection inputConnection) {
+        return inputConnection.getExtractedText(new ExtractedTextRequest(), 0).text.toString();
     }
 
     private String getInputText() {
@@ -97,15 +136,15 @@ public class CalculatorKeyboard extends InputMethodService implements KeyboardVi
     private void toggleList() {
         if (listView.getVisibility() != View.VISIBLE) {
             listView.setVisibility(View.VISIBLE);
-            //todo disable input
+            inputEnabled = false;
         } else {
             hideList();
+            inputEnabled = true;
             //todo enable input
         }
     }
 
-    private void clearAllText() {
-        InputConnection inputConnection = getCurrentInputConnection();
+    private void clearText(InputConnection inputConnection) {
         CharSequence currentText = inputConnection.getExtractedText(new ExtractedTextRequest(), 0).text;
         CharSequence beforeCursor = inputConnection.getTextBeforeCursor(currentText.length(), 0);
         CharSequence afterCursor = inputConnection.getTextAfterCursor(currentText.length(), 0);
@@ -116,16 +155,6 @@ public class CalculatorKeyboard extends InputMethodService implements KeyboardVi
         clearAllText();
         InputConnection inputConnection = getCurrentInputConnection();
         inputConnection.commitText(text, 0);
-    }
-
-    @Override
-    public void showResult(String result) {
-
-    }
-
-    @Override
-    public void showError(SortedSet<Integer> errorPositions) {
-
     }
 
     @Override
@@ -142,7 +171,34 @@ public class CalculatorKeyboard extends InputMethodService implements KeyboardVi
     }
 
     @Override
-    public void onHistoryLoadError(String error) {
+    public void showResult(String result) {
+        InputConnection inputConnection = getCurrentInputConnection();
+        clearText(inputConnection);
+        inputConnection.commitText(result, 1);
+    }
+
+    @Override
+    public void showError(String input, SortedSet<Integer> errorPositions, String message) {
+        SpannableStringBuilder builder = new SpannableStringBuilder(message);
+
+        if (errorPositions != null && !errorPositions.isEmpty()) {
+            builder.append("\n");
+
+            SpannableString spannableString = new SpannableString(input);
+            for (int index : errorPositions) {
+                ForegroundColorSpan span = new ForegroundColorSpan(Color.RED);
+                spannableString.setSpan(span, index, index + 1, Spanned.SPAN_INCLUSIVE_INCLUSIVE);
+            }
+
+            builder.append(spannableString);
+        }
+
+        errorView.setText(builder);
+        errorView.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void updateHistory(List<String> history) {
 
     }
 
@@ -155,7 +211,6 @@ public class CalculatorKeyboard extends InputMethodService implements KeyboardVi
     public void onRelease(int i) {
 
     }
-
     @Override
     public void onText(CharSequence charSequence) {
 
