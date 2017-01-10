@@ -7,13 +7,13 @@ import android.inputmethodservice.KeyboardView;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
+import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.ExtractedTextRequest;
 import android.view.inputmethod.InputConnection;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -23,9 +23,6 @@ import demo.paykey.paykeyassignment.CalculatorPresenter;
 import java.util.List;
 import java.util.SortedSet;
 
-import javax.inject.Inject;
-
-import demo.paykey.paykeyassignment.CalculatorContract;
 import demo.paykey.paykeyassignment.R;
 import demo.paykey.paykeyassignment.storage.StringListFileStorage;
 import demo.paykey.paykeyassignment.di.CalculatorComponent;
@@ -46,22 +43,37 @@ public class CalculatorKeyboard extends InputMethodService implements KeyboardVi
 
     boolean inputEnabled = true;
 
+    private HistoryListAdapter historyListAdapter;
+
     @Override
     public void onCreate() {
         super.onCreate();
         CalculatorComponent calculatorComponent =
-                DaggerCalculatorComponent.builder().calculatorModule(new CalculatorModule(this)).build();
+                DaggerCalculatorComponent.builder().calculatorModule(new CalculatorModule(this, this)).build();
         presenter = calculatorComponent.getPresenter();
     }
-
-    private HistoryListAdapter historyListAdapter;
-
-    CalculatorContract.Presenter presenter = new CalculatorPresenter(this, new StringListFileStorage(this));
 
     @Override
     public View onCreateInputView() {
         ViewGroup view = (ViewGroup)getLayoutInflater().inflate(R.layout.keyboard_layout, null);
         keyboardView = (KeyboardView)view.findViewById(R.id.keyboard);
+
+        setupListView(view);
+        hideList();
+
+        presenter.loadHistory();
+
+        errorView = (TextView)view.findViewById(R.id.error_message);
+        errorView.setVisibility(View.GONE);
+
+        keyboard = new Keyboard(this, R.xml.keyboard);
+        keyboardView.setKeyboard(keyboard);
+        keyboardView.setPreviewEnabled(false);
+        keyboardView.setOnKeyboardActionListener(this);
+        return view;
+    }
+
+    private void setupListView(ViewGroup view) {
         listView = (ListView)view.findViewById(R.id.history_list);
 
         historyListAdapter = new HistoryListAdapter(this, R.layout.list_item_layout, R.id.history_list_item);
@@ -75,20 +87,6 @@ public class CalculatorKeyboard extends InputMethodService implements KeyboardVi
 
             }
         });
-
-        presenter.loadHistory();
-
-        listView.setVisibility(View.GONE);
-        inputEnabled = true;
-
-        errorView = (TextView)view.findViewById(R.id.error_message);
-        errorView.setVisibility(View.GONE);
-
-        keyboard = new Keyboard(this, R.xml.keyboard);
-        keyboardView.setKeyboard(keyboard);
-        keyboardView.setPreviewEnabled(false);
-        keyboardView.setOnKeyboardActionListener(this);
-        return view;
     }
 
     @Override
@@ -112,8 +110,7 @@ public class CalculatorKeyboard extends InputMethodService implements KeyboardVi
                 inputConnection.deleteSurroundingText(1,0);
                 break;
             case Keyboard.KEYCODE_DONE:
-                presenter.evaluate(getInputText());
-                //todo calc
+                presenter.evaluate(getCurrentText(inputConnection));
                 break;
             case Keyboard.KEYCODE_CANCEL:
                 clearText(inputConnection);
@@ -128,20 +125,22 @@ public class CalculatorKeyboard extends InputMethodService implements KeyboardVi
         return inputConnection.getExtractedText(new ExtractedTextRequest(), 0).text.toString();
     }
 
-    private String getInputText() {
-        InputConnection inputConnection = getCurrentInputConnection();
-        return inputConnection.getExtractedText(new ExtractedTextRequest(), 0).text.toString();
-    }
-
     private void toggleList() {
         if (listView.getVisibility() != View.VISIBLE) {
-            listView.setVisibility(View.VISIBLE);
-            inputEnabled = false;
+            showList();
         } else {
             hideList();
-            inputEnabled = true;
-            //todo enable input
         }
+    }
+
+    private void hideList() {
+        listView.setVisibility(View.GONE);
+        inputEnabled = true;
+    }
+
+    private void showList() {
+        listView.setVisibility(View.VISIBLE);
+        inputEnabled = false;
     }
 
     private void clearText(InputConnection inputConnection) {
@@ -152,13 +151,18 @@ public class CalculatorKeyboard extends InputMethodService implements KeyboardVi
     }
 
     private void setText(String text) {
-        clearAllText();
         InputConnection inputConnection = getCurrentInputConnection();
+        clearText(inputConnection);
         inputConnection.commitText(text, 0);
     }
 
     @Override
-    public void onHistoryLoaded(List<String> history) {
+    public void onHistoryLoadError(String error) {
+        showError(null, null, error);
+    }
+
+    @Override
+    public void updateHistory(List<String> history) {
         historyListAdapter.clear();
         historyListAdapter.addAll(history);
         historyListAdapter.notifyDataSetChanged();
@@ -181,7 +185,7 @@ public class CalculatorKeyboard extends InputMethodService implements KeyboardVi
     public void showError(String input, SortedSet<Integer> errorPositions, String message) {
         SpannableStringBuilder builder = new SpannableStringBuilder(message);
 
-        if (errorPositions != null && !errorPositions.isEmpty()) {
+        if (!TextUtils.isEmpty(input) && errorPositions != null && !errorPositions.isEmpty()) {
             builder.append("\n");
 
             SpannableString spannableString = new SpannableString(input);
@@ -195,11 +199,6 @@ public class CalculatorKeyboard extends InputMethodService implements KeyboardVi
 
         errorView.setText(builder);
         errorView.setVisibility(View.VISIBLE);
-    }
-
-    @Override
-    public void updateHistory(List<String> history) {
-
     }
 
     @Override

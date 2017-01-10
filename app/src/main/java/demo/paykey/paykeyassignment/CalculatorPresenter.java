@@ -6,6 +6,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import demo.paykey.paykeyassignment.CalculatorContract;
+import demo.paykey.paykeyassignment.evaluator.EvaluationErrorException;
+import demo.paykey.paykeyassignment.evaluator.Evaluator;
 import demo.paykey.paykeyassignment.storage.HistoryStorage;
 import demo.paykey.paykeyassignment.storage.StorageException;
 
@@ -14,12 +16,14 @@ import demo.paykey.paykeyassignment.storage.StorageException;
  */
 
 public class CalculatorPresenter implements CalculatorContract.Presenter {
+    private final Evaluator evaluator;
     private final CalculatorContract.View view;
     private final HistoryStorage<String> historyStorage;
 
-    Executor executor = Executors.newSingleThreadExecutor();
+    private Executor executor = Executors.newSingleThreadExecutor();
 
-    public CalculatorPresenter(CalculatorContract.View view, HistoryStorage<String> historyStorage) {
+    public CalculatorPresenter(Evaluator evaluator, CalculatorContract.View view, HistoryStorage<String> historyStorage) {
+        this.evaluator = evaluator;
         this.view = view;
         this.historyStorage = historyStorage;
     }
@@ -28,10 +32,13 @@ public class CalculatorPresenter implements CalculatorContract.Presenter {
     public void evaluate(final String input) {
         try {
             view.showResult(String.valueOf(evaluator.evaluate(input)));
+            addToHistory(input);
         } catch (EvaluationErrorException exception) {
             view.showError(input, exception.getErrorPositions(), exception.getMessage());
         }
+    }
 
+    private void addToHistory(final String input) {
         view.historyItemAdded(input);
         executor.execute(new Runnable() {
             @Override
@@ -61,7 +68,7 @@ public class CalculatorPresenter implements CalculatorContract.Presenter {
     }
 
     private void historyLoaded(List<String> history) {
-        view.onHistoryLoaded(history);
+        view.updateHistory(history);
     }
 
     private void historyLoadError(String message) {

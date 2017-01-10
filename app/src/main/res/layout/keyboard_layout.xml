@@ -6,7 +6,9 @@
     android:layout_alignParentBottom="true">
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:background="@color/primaryButton"
+        android:paddingTop="1dp">
         <ListView
             android:id="@+id/history_list"
             android:layout_width="match_parent"
@@ -18,10 +20,10 @@
             android:layout_height="wrap_content"
             android:padding="3dp"
             android:gravity="center"
-            android:background="#ffff00"
+            android:background="#ddff0000"
             android:textColor="@android:color/black"
             android:lines="2"
-            style="@android:style/TextAppearance.Medium"
+            style="@android:style/TextAppearance.Small"
             android:layout_alignBottom="@id/history_list"
             />
     </RelativeLayout>
@@ -29,7 +31,7 @@
         android:id="@+id/keyboard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:keyBackground="@android:drawable/btn_default"
+        android:keyBackground="@drawable/btn_background"
         />
 
 </LinearLayout>
