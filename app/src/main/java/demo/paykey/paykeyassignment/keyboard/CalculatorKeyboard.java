@@ -7,26 +7,52 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.ExtractedTextRequest;
 import android.view.inputmethod.InputConnection;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 
+import java.util.List;
+import java.util.SortedSet;
+
+import demo.paykey.paykeyassignment.CalculatorContract;
+import demo.paykey.paykeyassignment.CalculatorPresenter;
 import demo.paykey.paykeyassignment.R;
+import demo.paykey.paykeyassignment.storage.StringListFileStorage;
 
 /**
  * Created by alexy on 07.01.2017.
  */
 
-public class CalculatorKeyboard extends InputMethodService implements KeyboardView.OnKeyboardActionListener{
-    private final static int KEYCODE_CLEAR = -10;
-
+public class CalculatorKeyboard extends InputMethodService implements KeyboardView.OnKeyboardActionListener, CalculatorContract.View{
     private KeyboardView keyboardView;
     private ListView listView;
     private Keyboard keyboard;
+
+    private HistoryListAdapter historyListAdapter;
+
+    CalculatorContract.Presenter presenter = new CalculatorPresenter(this, new StringListFileStorage(this));
 
     @Override
     public View onCreateInputView() {
         ViewGroup view = (ViewGroup)getLayoutInflater().inflate(R.layout.keyboard_layout, null);
         keyboardView = (KeyboardView)view.findViewById(R.id.keyboard);
         listView = (ListView)view.findViewById(R.id.history_list);
+
+        historyListAdapter = new HistoryListAdapter(this, R.layout.list_item_layout, R.id.history_list_item);
+        listView.setAdapter(historyListAdapter);
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                setText(historyListAdapter.getItem(position));
+                hideList();
+
+            }
+        });
+
+        presenter.loadHistory();
+
         keyboard = new Keyboard(this, R.xml.keyboard);
         keyboardView.setKeyboard(keyboard);
         keyboardView.setPreviewEnabled(false);
@@ -34,14 +60,8 @@ public class CalculatorKeyboard extends InputMethodService implements KeyboardVi
         return view;
     }
 
-    @Override
-    public void onPress(int i) {
-
-    }
-
-    @Override
-    public void onRelease(int i) {
-
+    private void hideList() {
+        listView.setVisibility(View.GONE);
     }
 
     @Override
@@ -56,6 +76,7 @@ public class CalculatorKeyboard extends InputMethodService implements KeyboardVi
                 //todo list
                 break;
             case Keyboard.KEYCODE_DONE:
+                presenter.evaluate(getInputText());
                 //todo calc
                 break;
             case Keyboard.KEYCODE_CANCEL:
@@ -68,12 +89,17 @@ public class CalculatorKeyboard extends InputMethodService implements KeyboardVi
 
     }
 
+    private String getInputText() {
+        InputConnection inputConnection = getCurrentInputConnection();
+        return inputConnection.getExtractedText(new ExtractedTextRequest(), 0).text.toString();
+    }
+
     private void toggleList() {
         if (listView.getVisibility() != View.VISIBLE) {
             listView.setVisibility(View.VISIBLE);
             //todo disable input
         } else {
-            listView.setVisibility(View.GONE);
+            hideList();
             //todo enable input
         }
     }
@@ -84,6 +110,50 @@ public class CalculatorKeyboard extends InputMethodService implements KeyboardVi
         CharSequence beforeCursor = inputConnection.getTextBeforeCursor(currentText.length(), 0);
         CharSequence afterCursor = inputConnection.getTextAfterCursor(currentText.length(), 0);
         inputConnection.deleteSurroundingText(beforeCursor.length(), afterCursor.length());
+    }
+
+    private void setText(String text) {
+        clearAllText();
+        InputConnection inputConnection = getCurrentInputConnection();
+        inputConnection.commitText(text, 0);
+    }
+
+    @Override
+    public void showResult(String result) {
+
+    }
+
+    @Override
+    public void showError(SortedSet<Integer> errorPositions) {
+
+    }
+
+    @Override
+    public void onHistoryLoaded(List<String> history) {
+        historyListAdapter.clear();
+        historyListAdapter.addAll(history);
+        historyListAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void historyItemAdded(String item) {
+        historyListAdapter.add(item);
+        historyListAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void onHistoryLoadError(String error) {
+
+    }
+
+    @Override
+    public void onPress(int i) {
+
+    }
+
+    @Override
+    public void onRelease(int i) {
+
     }
 
     @Override

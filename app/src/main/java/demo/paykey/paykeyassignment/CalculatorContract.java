@@ -12,6 +12,8 @@ public interface CalculatorContract {
         void showResult(String result);
         void showError(SortedSet<Integer> errorPositions);
         void onHistoryLoaded(List<String> history);
+        void historyItemAdded(String item);
+        void onHistoryLoadError(String error);
     }
 
     interface Presenter {

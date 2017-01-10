@@ -7,7 +7,7 @@ import java.util.List;
  */
 
 public interface HistoryStorage<T> {
-    void addHistoryItem(T item);
-    List<T> getHistory();
-    void clear();
+    void addHistoryItem(T item) throws StorageException;
+    List<T> getHistory() throws StorageException;
+    void clear() throws StorageException;
 }
