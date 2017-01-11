@@ -1,8 +1,8 @@
 package demo.paykey.paykeyassignment.evaluator.impl;
 
+import android.text.TextUtils;
+
 import java.util.EmptyStackException;
-import java.util.LinkedList;
-import java.util.Queue;
 import java.util.SortedSet;
 import java.util.Stack;
 import java.util.TreeSet;
@@ -22,6 +22,10 @@ public class ArithmeticEvaluator implements Evaluator {
     }
 
     private void preValidateInput(String input) throws EvaluationErrorException {
+        if(TextUtils.isEmpty(input)) {
+            throw new EvaluationErrorException("Nothing to calculate!");
+        }
+
         SortedSet<Integer> invalidCharacters = new TreeSet<>();
         boolean previousOperation = false;
 
@@ -44,7 +48,7 @@ public class ArithmeticEvaluator implements Evaluator {
         }
 
         if (!invalidCharacters.isEmpty()) {
-            throw new EvaluationErrorException("Evaluation error", invalidCharacters);
+            throw new EvaluationErrorException("Evaluation error!", invalidCharacters);
         }
     }
 
@@ -92,9 +96,9 @@ public class ArithmeticEvaluator implements Evaluator {
 
             arguments.push(operations.pop().result(arg1, arg2));
         } catch (ArithmeticException e) {
-            throw new EvaluationErrorException("Division by zero");
+            throw new EvaluationErrorException("Division by zero!");
         } catch (EmptyStackException e) {
-            throw new EvaluationErrorException("Missing argument");
+            throw new EvaluationErrorException("Missing argument!");
         }
     }
 

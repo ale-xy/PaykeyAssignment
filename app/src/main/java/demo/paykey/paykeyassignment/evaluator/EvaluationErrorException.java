@@ -1,9 +1,6 @@
 package demo.paykey.paykeyassignment.evaluator;
 
-import java.util.List;
-import java.util.Set;
 import java.util.SortedSet;
-import java.util.TreeSet;
 
 /**
  * Created by alexy on 07.01.2017.

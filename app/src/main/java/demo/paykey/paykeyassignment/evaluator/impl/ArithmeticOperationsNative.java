@@ -11,7 +11,7 @@ public class ArithmeticOperationsNative implements ArithmeticOperations {
         System.loadLibrary("native-lib");
     }
 
-    private HashMap<String, ArithmeticOperation> operationHashMap = new HashMap<>(4);
+    private final HashMap<String, ArithmeticOperation> operationHashMap = new HashMap<>(4);
 
     public ArithmeticOperationsNative() {
         operationHashMap.put("+", new Add());

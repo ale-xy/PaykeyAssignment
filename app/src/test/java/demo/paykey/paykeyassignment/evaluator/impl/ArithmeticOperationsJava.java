@@ -8,7 +8,7 @@ import java.util.HashMap;
 
 public class ArithmeticOperationsJava implements ArithmeticOperations {
 
-    private HashMap<String, ArithmeticOperation> operationHashMap = new HashMap<>(4);
+    private final HashMap<String, ArithmeticOperation> operationHashMap = new HashMap<>(4);
 
     ArithmeticOperationsJava() {
         operationHashMap.put("+", new ArithmeticOperation() {

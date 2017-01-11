@@ -8,23 +8,43 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/primaryButton"
+        android:descendantFocusability="blocksDescendants"
         android:paddingTop="1dp">
-        <ListView
-            android:id="@+id/history_list"
+        <FrameLayout
+            android:id="@+id/history_list_frame"
             android:layout_width="match_parent"
-            android:layout_height="120dp"
-            android:background="@android:color/white"/>
+            android:layout_height="@dimen/history_list_height"
+            android:descendantFocusability="blocksDescendants"
+            android:background="@android:color/white"
+            >
+            <ListView
+                android:id="@+id/history_list"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/history_list_height"
+                android:descendantFocusability="blocksDescendants"
+                />
+            <TextView
+                android:id="@+id/no_items_text"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/history_list_height"
+                android:visibility="gone"
+                android:gravity="center"
+                android:textColor="@color/emptyListTextColor"
+                android:textAppearance="@style/Base.TextAppearance.AppCompat.Medium"
+                android:text="@string/no_items_in_the_history"
+                />
+        </FrameLayout>
         <TextView
             android:id="@+id/error_message"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="3dp"
             android:gravity="center"
-            android:background="#ddff0000"
-            android:textColor="@android:color/black"
-            android:lines="2"
+            android:layout_alignBottom="@id/history_list_frame"
+            android:background="@color/errorBackground"
+            android:textColor="@color/errorTextColor"
             style="@android:style/TextAppearance.Small"
-            android:layout_alignBottom="@id/history_list"
+            android:lines="2"
             />
     </RelativeLayout>
     <android.inputmethodservice.KeyboardView

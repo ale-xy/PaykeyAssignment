@@ -13,18 +13,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.ExtractedTextRequest;
 import android.view.inputmethod.InputConnection;
-import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 
 
 import demo.paykey.paykeyassignment.CalculatorContract;
-import demo.paykey.paykeyassignment.CalculatorPresenter;
+
 import java.util.List;
 import java.util.SortedSet;
 
 import demo.paykey.paykeyassignment.R;
-import demo.paykey.paykeyassignment.storage.StringListFileStorage;
 import demo.paykey.paykeyassignment.di.CalculatorComponent;
 import demo.paykey.paykeyassignment.di.CalculatorModule;
 import demo.paykey.paykeyassignment.di.DaggerCalculatorComponent;
@@ -35,13 +33,14 @@ import demo.paykey.paykeyassignment.di.DaggerCalculatorComponent;
 
 public class CalculatorKeyboard extends InputMethodService implements KeyboardView.OnKeyboardActionListener, CalculatorContract.View{
     private KeyboardView keyboardView;
+    private View listViewFrame;
     private ListView listView;
     private Keyboard keyboard;
     private TextView errorView;
 
     private CalculatorContract.Presenter presenter;
 
-    boolean inputEnabled = true;
+    private boolean inputEnabled = true;
 
     private HistoryListAdapter historyListAdapter;
 
@@ -74,19 +73,23 @@ public class CalculatorKeyboard extends InputMethodService implements KeyboardVi
     }
 
     private void setupListView(ViewGroup view) {
+        listViewFrame = view.findViewById(R.id.history_list_frame);
         listView = (ListView)view.findViewById(R.id.history_list);
 
         historyListAdapter = new HistoryListAdapter(this, R.layout.list_item_layout, R.id.history_list_item);
-        listView.setAdapter(historyListAdapter);
-
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        historyListAdapter.setListener(new HistoryListAdapter.Listener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                setText(historyListAdapter.getItem(position));
+            public void onItemClicked(String value) {
+                setText(value);
                 hideList();
-
             }
         });
+
+        listView.setAdapter(historyListAdapter);
+
+        listView.setItemsCanFocus(false);
+        View emptyView = view.findViewById(R.id.no_items_text);
+        listView.setEmptyView(emptyView);
     }
 
     @Override
@@ -126,7 +129,7 @@ public class CalculatorKeyboard extends InputMethodService implements KeyboardVi
     }
 
     private void toggleList() {
-        if (listView.getVisibility() != View.VISIBLE) {
+        if (listViewFrame.getVisibility() != View.VISIBLE) {
             showList();
         } else {
             hideList();
@@ -134,12 +137,12 @@ public class CalculatorKeyboard extends InputMethodService implements KeyboardVi
     }
 
     private void hideList() {
-        listView.setVisibility(View.GONE);
+        listViewFrame.setVisibility(View.GONE);
         inputEnabled = true;
     }
 
     private void showList() {
-        listView.setVisibility(View.VISIBLE);
+        listViewFrame.setVisibility(View.VISIBLE);
         inputEnabled = false;
     }
 
@@ -164,7 +167,11 @@ public class CalculatorKeyboard extends InputMethodService implements KeyboardVi
     @Override
     public void updateHistory(List<String> history) {
         historyListAdapter.clear();
-        historyListAdapter.addAll(history);
+
+        if (history != null && !history.isEmpty()) {
+            historyListAdapter.addAll(history);
+        }
+
         historyListAdapter.notifyDataSetChanged();
     }
 
@@ -190,7 +197,7 @@ public class CalculatorKeyboard extends InputMethodService implements KeyboardVi
 
             SpannableString spannableString = new SpannableString(input);
             for (int index : errorPositions) {
-                ForegroundColorSpan span = new ForegroundColorSpan(Color.RED);
+                ForegroundColorSpan span = new ForegroundColorSpan(Color.YELLOW);
                 spannableString.setSpan(span, index, index + 1, Spanned.SPAN_INCLUSIVE_INCLUSIVE);
             }
 

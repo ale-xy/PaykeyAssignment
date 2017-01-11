@@ -1,5 +1,4 @@
 #include <jni.h>
-#include <string>
 
 //demo.paykey.paykeyassignment.evaluator.impl
 

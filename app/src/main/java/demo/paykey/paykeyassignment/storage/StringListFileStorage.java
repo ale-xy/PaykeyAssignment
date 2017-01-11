@@ -4,11 +4,9 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -53,6 +51,11 @@ public class StringListFileStorage implements HistoryStorage<String> {
     @Override
     public List<String> getHistory() throws StorageException {
         File file = getStorageFile();
+
+        if (!file.exists()) {
+            return null;
+        }
+
         List<String> strings = new ArrayList<>();
 
         try {
@@ -71,12 +74,6 @@ public class StringListFileStorage implements HistoryStorage<String> {
         }
 
         return strings;
-    }
-
-    @Override
-    public void clear() {
-        File file = getStorageFile();
-        file.delete();
     }
 
     @NonNull

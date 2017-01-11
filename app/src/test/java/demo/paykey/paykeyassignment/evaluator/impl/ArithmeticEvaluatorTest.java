@@ -11,7 +11,7 @@ import static org.junit.Assert.*;
  */
 @RunWith(JUnit4.class)
 public class ArithmeticEvaluatorTest {
-    private ArithmeticEvaluator arithmeticEvaluator = new ArithmeticEvaluator(new ArithmeticOperationsJava());
+    private final ArithmeticEvaluator arithmeticEvaluator = new ArithmeticEvaluator(new ArithmeticOperationsJava());
 
     @Test
     public void testEvaluate() throws Exception {

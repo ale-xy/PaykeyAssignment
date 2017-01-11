@@ -5,4 +5,10 @@
     <color name="colorAccent">#FF4081</color>
     <color name="pressedButton">#777777</color>
     <color name="primaryButton">#444444</color>
+    <color name="errorBackground">#444444</color>
+    <color name="errorTextColor">#eeeeee</color>
+    <color name="emptyListTextColor">#aaaaaa</color>
+    <color name="listColorPressed">#dddddd</color>
+    <color name="listColor">#ffffff</color>
+    <color name="listTextColor">#111111</color>
 </resources>

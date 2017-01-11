@@ -3,7 +3,6 @@ package demo.paykey.paykeyassignment;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 
 import demo.paykey.paykeyassignment.CalculatorContract;
 import demo.paykey.paykeyassignment.evaluator.EvaluationErrorException;
@@ -20,7 +19,7 @@ public class CalculatorPresenter implements CalculatorContract.Presenter {
     private final CalculatorContract.View view;
     private final HistoryStorage<String> historyStorage;
 
-    private Executor executor = Executors.newSingleThreadExecutor();
+    private final Executor executor = Executors.newSingleThreadExecutor();
 
     public CalculatorPresenter(Evaluator evaluator, CalculatorContract.View view, HistoryStorage<String> historyStorage) {
         this.evaluator = evaluator;
